@@ -1,0 +1,585 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Life OS</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">Life OS</div>
+        <div class="tagline">Private life operating system</div>
+      </div>
+      <div class="top-actions">
+        <div class="today" id="todayDate">Wednesday, February 4, 2026</div>
+        <button class="ghost" id="authBtn" type="button">Log In</button>
+      </div>
+    </header>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="authModal" aria-hidden="true">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">Sync your Life OS</div>
+          <button class="modal-close" id="closeAuth">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Enter your email to receive a magic link login.</p>
+
+          <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" />
+          </div>
+
+          <div class="auth-actions">
+            <button class="btn-primary" id="doLogin">Send Magic Link</button>
+          </div>
+          <div class="auth-status" id="authStatus"></div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="topnav" aria-label="Primary">
+      <a href="#checkin">Check-in</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#overview">Monthly</a>
+      <a href="#yearly">Yearly</a>
+      <a href="#analytics">Analytics</a>
+    </nav>
+
+    <main class="content">
+      <section id="checkin" class="section">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Daily Check-in</div>
+            <div class="section-sub">Fast, honest, under a minute.</div>
+          </div>
+          <div class="section-meta">Completion <span id="completionPercent">0%</span></div>
+        </div>
+
+        <div class="checkin-list">
+          <!-- Gym -->
+          <div class="checkin-item" data-system="gym">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-gym" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Gym</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Gym" data-initial="true">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Sleep -->
+          <div class="checkin-item" data-system="sleep">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-sleep" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Sleep</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Sleep" data-initial="true">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Study -->
+          <div class="checkin-item" data-system="study">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-study" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Study</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Study" data-initial="true">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- New Skill -->
+          <div class="checkin-item" data-system="new-skill">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-skill" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">New Skill</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="New Skill">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Food -->
+          <div class="checkin-item" data-system="food">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-food" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Food</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Food" data-initial="true">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Water -->
+          <div class="checkin-item" data-system="water">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-water" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Water (2L)</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Water" data-initial="true">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Money Gain -->
+          <div class="checkin-item" data-system="money">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-money" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Money Gain</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Money Gain">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Healthy -->
+          <div class="checkin-item" data-system="healthy">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-health" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Healthy</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Healthy" data-initial="true">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Social Interaction -->
+          <div class="checkin-item" data-system="social">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-social" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Social Interaction</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Social Interaction">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Love Life -->
+          <div class="checkin-item" data-system="love">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-love" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Love Life</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Love Life">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="checkin-item" data-system="content">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-content" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Content / Pinterest</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Content">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+
+          <!-- Productivity -->
+          <div class="checkin-item" data-system="productivity">
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-productivity" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">Productivity</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="Productivity" data-initial="true">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkin-footer">
+          <div class="score">Day Score: <span id="dayScore">0%</span></div>
+          <div class="score-note" id="dayMessage">You showed up today.</div>
+        </div>
+      </section>
+
+
+
+      <section id="dashboard" class="section">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Dashboard</div>
+            <div class="section-sub">Data, distilled for today.</div>
+          </div>
+        </div>
+
+        <div class="grid dashboard-grid">
+          <article class="card chart-card" data-animate>
+            <div class="card-head">
+              <div>
+                <div class="card-title">Monthly Progress</div>
+                <div class="card-sub">How did you show up this month?</div>
+              </div>
+              <div class="card-meta">Avg <span id="monthlyAvg">0%</span></div>
+            </div>
+            <svg class="line-chart" id="monthlyChart" viewBox="0 0 600 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.9" />
+                  <stop offset="100%" stop-color="var(--accent-soft)" stop-opacity="0.7" />
+                </linearGradient>
+                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25" />
+                  <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path id="monthlyArea" class="area" d=""></path>
+              <path id="monthlyLine" class="line" d=""></path>
+            </svg>
+            <div class="chart-axis">
+              <span>1</span>
+              <span>15</span>
+              <span>30</span>
+            </div>
+          </article>
+
+          <article class="card ring-card" data-animate>
+            <div class="card-title">Today&#39;s Life Ring</div>
+            <div class="card-sub">How complete is today?</div>
+            <div class="ring">
+              <svg viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="ring-bg" cx="60" cy="60" r="48"></circle>
+                <circle class="ring-progress" id="todayRing" cx="60" cy="60" r="48"></circle>
+              </svg>
+              <div class="ring-center">
+                <div class="ring-value" id="todayPercent">0%</div>
+                <div class="ring-label">Today</div>
+              </div>
+            </div>
+            <div class="ring-meta">
+              <div><span id="ringCompleted">0</span> completed</div>
+              <div><span id="ringRemaining">0</span> remaining</div>
+            </div>
+          </article>
+
+          <article class="card insight-card" data-animate>
+            <div class="card-title">Insight Strip</div>
+            <div class="card-sub">What is the data whispering?</div>
+            <div class="insight-text" id="insightText">Consistency dropped on weekends.</div>
+          </article>
+        </div>
+      </section>
+
+      <section id="overview" class="section">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Monthly Overview</div>
+            <div class="section-sub">Where did your energy show up?</div>
+          </div>
+        </div>
+
+        <div class="grid overview-grid">
+          <article class="card heatmap-card" data-animate>
+            <div class="card-title">Calendar Heatmap</div>
+            <div class="card-sub">Which days held it together?</div>
+            <div class="heatmap" id="heatmap"></div>
+            <div class="heatmap-legend">
+              <span>Low</span>
+              <div class="legend-bar">
+                <span class="level-1"></span>
+                <span class="level-2"></span>
+                <span class="level-3"></span>
+                <span class="level-4"></span>
+                <span class="level-5"></span>
+              </div>
+              <span>High</span>
+            </div>
+          </article>
+
+          <article class="card detail-card" data-animate>
+            <div class="card-title">Day Details</div>
+            <div class="card-sub">Click a day to inspect the truth.</div>
+            <div class="detail-date" id="selectedDay">Day 1</div>
+            <div class="detail-score"><span id="selectedScore">0%</span> completion</div>
+            <div class="detail-stats">
+              <div><span id="selectedCompleted">0</span> completed</div>
+              <div><span id="selectedMissed">0</span> missed</div>
+            </div>
+            <div class="divider"></div>
+            <div class="kpi-grid">
+              <div class="kpi">
+                <div class="kpi-label">Best day</div>
+                <div class="kpi-value" id="bestDay">Day 0</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Worst day</div>
+                <div class="kpi-value" id="worstDay">Day 0</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Streak count</div>
+                <div class="kpi-value" id="streakCount">0</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Missed opportunities</div>
+                <div class="kpi-value" id="missedCount">0</div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="grid overview-lower">
+          <article class="card donut-card" data-animate>
+            <div class="card-title">Category Distribution</div>
+            <div class="card-sub">Which systems carry the month?</div>
+            <div class="donut-wrap">
+              <div class="donut" id="categoryDonut"></div>
+              <div class="donut-center">Systems</div>
+            </div>
+            <div class="donut-legend" id="categoryLegend"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="yearly" class="section">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Yearly Countdown</div>
+            <div class="section-sub">Time remaining in the current cycle.</div>
+          </div>
+        </div>
+
+        <article class="card countdown-card" data-animate>
+          <div class="countdown-text">
+            <span id="daysRemaining">0</span> days until <span id="nextYear">2027</span>
+          </div>
+        </article>
+      </section>
+
+      <section id="analytics" class="section">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Completion Analytics</div>
+            <div class="section-sub">Only charts that answer a question.</div>
+          </div>
+        </div>
+
+        <div class="grid analytics-grid">
+          <article class="card analytics-card" data-animate>
+            <div class="card-title">Overall Life Completion</div>
+            <div class="card-sub">How complete was the month, on average?</div>
+            <div class="big-number" id="overallCompletion">0%</div>
+            <div class="trend" id="trendDelta">0% vs last month</div>
+          </article>
+
+          <article class="card analytics-card" data-animate>
+            <div class="card-title">Completed vs Incomplete</div>
+            <div class="card-sub">How much was actually finished?</div>
+            <div class="donut-wrap">
+              <div class="donut" id="completionDonut"></div>
+              <div class="donut-center" id="completionLabel">Completed</div>
+            </div>
+          </article>
+
+          <article class="card analytics-card" data-animate>
+            <div class="card-title">Category Contribution</div>
+            <div class="card-sub">Which areas move the needle most?</div>
+            <div class="breakdown" id="categoryBreakdown"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+
+  <!-- Footer Controls -->
+  <footer class="app-footer" style="text-align: center; margin-top: 60px; padding-bottom: 40px;">
+    <div class="social-links" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">
+      <a href="https://www.linkedin.com/in/sangeeth-cs-94668531b/" target="_blank" aria-label="LinkedIn"
+        class="social-btn">
+        <svg class="icon">
+          <use href="#icon-linkedin" />
+        </svg>
+      </a>
+      <a href="https://github.com/Caxted" target="_blank" aria-label="GitHub" class="social-btn">
+        <svg class="icon">
+          <use href="#icon-github" />
+        </svg>
+      </a>
+      <a href="mailto:sangeeth00x@gmail.com" aria-label="Email" class="social-btn">
+        <svg class="icon">
+          <use href="#icon-mail" />
+        </svg>
+      </a>
+    </div>
+
+    <button class="ghost" id="clearDataBtn" type="button" style="font-size: 11px; opacity: 0.4;">Reset All Local
+      Data</button>
+  </footer>
+
+  <svg class="icon-defs" aria-hidden="true">
+    <symbol id="icon-gym" viewBox="0 0 24 24">
+      <line x1="3" y1="10" x2="3" y2="14"></line>
+      <line x1="7" y1="8" x2="7" y2="16"></line>
+      <line x1="7" y1="12" x2="17" y2="12"></line>
+      <line x1="17" y1="8" x2="17" y2="16"></line>
+      <line x1="21" y1="10" x2="21" y2="14"></line>
+    </symbol>
+    <symbol id="icon-sleep" viewBox="0 0 24 24">
+      <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a6.5 6.5 0 0 0 11.5 11.5z"></path>
+    </symbol>
+    <symbol id="icon-study" viewBox="0 0 24 24">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+      <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 0 4 19.5z"></path>
+    </symbol>
+    <symbol id="icon-skill" viewBox="0 0 24 24">
+      <path d="M12 3l2.2 5.2L20 10l-5 3.8L16.5 20 12 16.8 7.5 20 9 13.8 4 10l5.8-1.8z"></path>
+    </symbol>
+    <symbol id="icon-food" viewBox="0 0 24 24">
+      <path d="M4 11h16"></path>
+      <path d="M6 11a6 6 0 0 0 12 0"></path>
+      <path d="M8 5h8"></path>
+    </symbol>
+    <symbol id="icon-water" viewBox="0 0 24 24">
+      <path d="M12 3s5 6 5 10a5 5 0 1 1-10 0c0-4 5-10 5-10z"></path>
+    </symbol>
+    <symbol id="icon-money" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8"></circle>
+      <path d="M12 8v8"></path>
+      <path d="M9 11l3-3 3 3"></path>
+    </symbol>
+    <symbol id="icon-health" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8"></circle>
+      <path d="M12 8v8"></path>
+      <path d="M8 12h8"></path>
+    </symbol>
+    <symbol id="icon-social" viewBox="0 0 24 24">
+      <circle cx="9" cy="10" r="3"></circle>
+      <circle cx="16" cy="11" r="3"></circle>
+      <path d="M3 20a6 6 0 0 1 12 0"></path>
+      <path d="M12 20a5 5 0 0 1 9 0"></path>
+    </symbol>
+    <symbol id="icon-love" viewBox="0 0 24 24">
+      <path d="M20.5 8.5a4 4 0 0 0-7-2.5 4 4 0 0 0-7 2.5c0 4.5 7 9 7 9s7-4.5 7-9z"></path>
+    </symbol>
+    <symbol id="icon-content" viewBox="0 0 24 24">
+      <path d="M12 21s6-6 6-11a6 6 0 0 0-12 0c0 5 6 11 6 11z"></path>
+      <circle cx="12" cy="10" r="2.5"></circle>
+    </symbol>
+    <symbol id="icon-productivity" viewBox="0 0 24 24">
+      <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+      <path d="M8 12l2.5 2.5L16 9"></path>
+    </symbol>
+    <symbol id="icon-linkedin" viewBox="0 0 24 24">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+      <rect x="2" y="9" width="4" height="12"></rect>
+      <circle cx="4" cy="4" r="2"></circle>
+    </symbol>
+    <symbol id="icon-github" viewBox="0 0 24 24">
+      <path
+        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+      </path>
+    </symbol>
+    <symbol id="icon-mail" viewBox="0 0 24 24">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+      <polyline points="22,6 12,13 2,6"></polyline>
+    </symbol>
+  </svg>
+</body>
+
+</html>
