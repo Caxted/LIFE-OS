@@ -1,7 +1,6 @@
 import { supabase } from './auth.js';
 
 export function formatDateKey(date) {
-    // Fix: Use local date instead of UTC to avoid timezone shifts
     const offset = date.getTimezoneOffset() * 60000;
     const localDate = new Date(date.getTime() - offset);
     return localDate.toISOString().split('T')[0];
@@ -9,7 +8,6 @@ export function formatDateKey(date) {
 
 export const DataManager = {
     async load(date) {
-        // 1. Try Supabase if logged in
         if (supabase) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
@@ -17,29 +15,30 @@ export const DataManager = {
                     .from('daily_logs')
                     .select('data')
                     .eq('user_id', session.user.id)
-                    .eq('date', date) // date column in DB should be date type or text YYYY-MM-DD
+                    .eq('date', date)
                     .single();
 
                 if (data) return data.data;
             }
         }
-
-        // 2. Fallback to LocalStorage
         const stored = localStorage.getItem(`lifeos-${date}`);
         return stored ? JSON.parse(stored) : {};
     },
 
     async save(date, logs) {
-        // 1. Save to LocalStorage (Optimistic update)
-        localStorage.setItem(`lifeos-${date}`, JSON.stringify(logs));
+        localStorage.setItem(`lifeos-${date}`, JSON.stringify(logs)); // Optimistic
 
-        // 2. Save to Supabase if logged in
         if (supabase) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
-                await supabase
+                const { error } = await supabase
                     .from('daily_logs')
                     .upsert({ user_id: session.user.id, date: date, data: logs }, { onConflict: 'user_id, date' });
+
+                if (error) {
+                    console.error("Save failed:", error);
+                    showToast("Failed to save to cloud", "error");
+                }
             }
         }
     },
@@ -49,12 +48,9 @@ export const DataManager = {
         const today = new Date();
         const startDate = new Date();
         startDate.setDate(today.getDate() - days);
-
-        // Proper local date strings for query range
         const startKey = formatDateKey(startDate);
         const endKey = formatDateKey(today);
 
-        // 1. Try Bulk Fetch from Supabase
         if (supabase) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
@@ -66,25 +62,40 @@ export const DataManager = {
                     .lte('date', endKey);
 
                 if (data) {
-                    data.forEach(row => {
-                        history[row.date] = row.data;
-                    });
+                    data.forEach(row => history[row.date] = row.data);
                     return history;
                 }
             }
         }
 
-        // 2. Fallback to LocalStorage Loop
+        // Fallback
         for (let i = 0; i < days; i++) {
             const d = new Date();
             d.setDate(today.getDate() - i);
             const dateKey = formatDateKey(d);
             const stored = localStorage.getItem(`lifeos-${dateKey}`);
-            if (stored) {
-                history[dateKey] = JSON.parse(stored);
-            }
+            if (stored) history[dateKey] = JSON.parse(stored);
         }
         return history;
+    },
+
+    subscribe(date, onUpdate) {
+        if (!supabase) return;
+
+        const channel = supabase.channel(`public:daily_logs:${date}`)
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'daily_logs', filter: `date=eq.${date}` },
+                (payload) => {
+                    console.log('Real-time update:', payload);
+                    if (payload.new && payload.new.data) {
+                        onUpdate(payload.new.data);
+                    }
+                }
+            )
+            .subscribe();
+
+        return channel;
     }
 };
 
@@ -92,38 +103,80 @@ export const DataManager = {
 import { systems as defaultSystems } from './config.js';
 
 export const SystemsManager = {
-    load() {
-        // Try LocalStorage first
+    async load() {
+        if (supabase) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const { data } = await supabase
+                    .from('user_settings')
+                    .select('systems')
+                    .eq('user_id', session.user.id)
+                    .single();
+
+                if (data?.systems) {
+                    // Sync local storage as backup
+                    localStorage.setItem('lifeos-systems', JSON.stringify(data.systems));
+                    return data.systems;
+                }
+            }
+        }
+
         const stored = localStorage.getItem('lifeos-systems');
-        if (stored) return JSON.parse(stored);
-
-        // Return defaults if nothing saved
-        return [...defaultSystems];
+        return stored ? JSON.parse(stored) : [...defaultSystems];
     },
 
-    save(systems) {
-        localStorage.setItem('lifeos-systems', JSON.stringify(systems));
-        // Note: For now, we only sync systems locally. 
-        // Syncing definitions to Supabase would require a 'settings' table.
+    async save(systems) {
+        localStorage.setItem('lifeos-systems', JSON.stringify(systems)); // Optimistic
+
+        if (supabase) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                await supabase
+                    .from('user_settings')
+                    .upsert({ user_id: session.user.id, systems: systems });
+            }
+        }
     },
 
-    add(label) {
-        const current = this.load();
+    async add(label) {
+        const current = await this.load();
         const id = label.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-        // Prevent duplicates
         if (current.find(s => s.id === id)) return current;
-
-        const newSystem = { id, label };
-        const updated = [...current, newSystem];
-        this.save(updated);
+        const updated = [...current, { id, label }];
+        await this.save(updated);
         return updated;
     },
 
-    remove(id) {
-        const current = this.load();
+    async remove(id) {
+        const current = await this.load();
         const updated = current.filter(s => s.id !== id);
-        this.save(updated);
+        await this.save(updated);
         return updated;
     }
 };
+
+export function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    // Add wait for animation
+    setTimeout(() => toast.classList.add('visible'), 10);
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function createToastContainer() {
+    const div = document.createElement('div');
+    div.id = 'toast-container';
+    div.style.cssText = `
+        position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+        display: flex; flex-direction: column; gap: 10px;
+    `;
+    document.body.appendChild(div);
+    return div;
+}

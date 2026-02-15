@@ -17,14 +17,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   setTodayDate();
   // Theme is now enforced in CSS
 
-  // Load Data
+  // Load Data & Subscribe
   try {
     currentLogs = await DataManager.load(todayKey);
+    // Subscribe to real-time changes
+    DataManager.subscribe(todayKey, (newLogs) => {
+      console.log("Remote update received", newLogs);
+      currentLogs = newLogs;
+      // Refresh UI
+      initCheckin();
+      updateDayScore();
+      showToast("Synced with cloud", "success");
+    });
   } catch (e) {
     console.error("Failed to load today's logs", e);
   }
 
-  initCheckin(); // Uses currentLogs
+  // Load Systems (Custom Habits)
+  let userSystems = [];
+  try {
+    userSystems = await SystemsManager.load();
+  } catch (e) {
+    console.error("Failed to load systems", e);
+    userSystems = systems; // fallback to config
+  }
+
+  initCheckin(userSystems); // Uses currentLogs & userSystems
 
   // Reveal UI immediately so user sees structure
   revealCards();
@@ -72,11 +90,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function calculateScore(logs) {
   if (!logs) return 0;
-  const total = systems.length;
+  // Use dynamic systems list length
+  const total = document.querySelectorAll('.checkin-item').length || systems.length;
   let done = 0;
-  systems.forEach(sys => {
-    if (logs[sys.id]?.done) done++;
+  // We need to iterate over the keys in logs that match active systems
+  // For simplicity in this version, we count 'done' flags.
+  Object.values(logs).forEach(val => {
+    if (val.done) done++;
   });
+
   return Math.round((done / total) * 100);
 }
 
@@ -96,7 +118,13 @@ function setTodayDate() {
 
 
 
-function initCheckin() {
+async function initCheckin(userSystems) {
+  // If systems are passed, re-render the list
+  if (userSystems) {
+    renderCheckinList(userSystems);
+  }
+
+  // Re-select toggles after render
   const toggles = Array.from(document.querySelectorAll(".toggle"));
 
   toggles.forEach((toggle) => {
@@ -112,35 +140,48 @@ function initCheckin() {
     const textarea = item.querySelector('textarea');
     if (textarea) textarea.value = note;
 
-    toggle.addEventListener("click", () => {
-      const next = toggle.getAttribute("aria-checked") !== "true";
-      setToggle(toggle, next);
+    // Remove old listeners to prevent duplicates if re-init
+    const newToggle = toggle.cloneNode(true);
+    toggle.parentNode.replaceChild(newToggle, toggle);
+
+    newToggle.addEventListener("click", async () => {
+      const next = newToggle.getAttribute("aria-checked") !== "true";
+      setToggle(newToggle, next);
 
       // Update State
       if (!currentLogs[sysId]) currentLogs[sysId] = {};
       currentLogs[sysId].done = next;
-      DataManager.save(todayKey, currentLogs);
+
+      await DataManager.save(todayKey, currentLogs);
+      // showToast("Saved", "success"); // Optional: too chatty?
 
       updateDayScore();
     });
 
     if (textarea) {
-      textarea.addEventListener('blur', () => {
-        const val = textarea.value;
+      const newTextarea = textarea.cloneNode(true);
+      textarea.parentNode.replaceChild(newTextarea, textarea);
+
+      newTextarea.addEventListener('blur', async () => {
+        const val = newTextarea.value;
         if (!currentLogs[sysId]) currentLogs[sysId] = {};
         currentLogs[sysId].note = val;
-        DataManager.save(todayKey, currentLogs);
+        await DataManager.save(todayKey, currentLogs);
       });
     }
   });
 
+  // Re-attach note toggles
   document.querySelectorAll(".note-toggle").forEach((button) => {
-    button.addEventListener("click", () => {
-      const item = button.closest(".checkin-item");
+    const newBtn = button.cloneNode(true);
+    button.parentNode.replaceChild(newBtn, button);
+
+    newBtn.addEventListener("click", () => {
+      const item = newBtn.closest(".checkin-item");
       if (!item) return;
       item.classList.toggle("note-open");
       const open = item.classList.contains("note-open");
-      button.textContent = open ? "Hide note" : "Add note";
+      newBtn.textContent = open ? "Hide note" : "Add note";
       if (open) {
         const textarea = item.querySelector("textarea");
         if (textarea) textarea.focus();
@@ -149,6 +190,44 @@ function initCheckin() {
   });
 
   updateDayScore();
+}
+
+function renderCheckinList(userSystems) {
+  const container = document.querySelector('.checkin-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  userSystems.forEach(sys => {
+    const item = document.createElement('div');
+    item.className = 'checkin-item';
+    item.dataset.system = sys.id;
+
+    // Icon mapping (fallback to 'skill' if not found or custom)
+    // For simplicity, we assume custom habits use a generic icon or we'd need an icon picker.
+    // We'll stick to fixed icons for default IDs, generic for others.
+    const iconId = ['gym', 'sleep', 'study', 'food', 'water', 'money', 'healthy', 'social', 'love', 'content', 'productivity'].includes(sys.id)
+      ? `icon-${sys.id === 'new-skill' ? 'skill' : sys.id}`
+      : 'icon-skill';
+
+    item.innerHTML = `
+            <div class="item-left">
+              <svg class="icon" aria-hidden="true">
+                <use href="#${iconId}" />
+              </svg>
+              <div class="item-text">
+                <div class="item-title">${sys.label}</div>
+                <button class="note-toggle" type="button">Add note</button>
+              </div>
+            </div>
+            <button class="toggle" role="switch" aria-checked="false" aria-label="${sys.label}">
+              <span class="toggle-thumb"></span>
+            </button>
+            <div class="note">
+              <textarea rows="2" placeholder="Optional note..."></textarea>
+            </div>
+        `;
+    container.appendChild(item);
+  });
 }
 
 function setToggle(toggle, isOn) {
